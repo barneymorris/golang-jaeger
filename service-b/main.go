@@ -4,20 +4,19 @@ import (
 	"log"
 
 	"github.com/betelgeusexru/golang-jaeger/service-b/pkg/tracing"
-	"github.com/gofiber/contrib/otelfiber"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 func main() {
 	tracing.InitTracer()
 
-	app := fiber.New()
+	r := gin.Default()
+	r.Use(otelgin.Middleware("service-a"))
 
-	app.Use(otelfiber.Middleware())
-
-	app.Get("/bye", func(ctx *fiber.Ctx) error {
-		return ctx.JSON(map[string]string{"msg": "bye"})
+	r.GET("/bye", func(ctx *gin.Context) {
+		ctx.JSON(200, map[string]string{"msg": "bye"})
 	})
 
-	log.Fatal(app.Listen(":3001"))
+	log.Fatal(r.Run(":3001"))
 }
