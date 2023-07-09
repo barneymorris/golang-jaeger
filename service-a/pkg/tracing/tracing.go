@@ -1,7 +1,7 @@
 package tracing
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
@@ -17,10 +17,13 @@ import (
 var tracer *sdktrace.TracerProvider
 
 func InitTracer() {
+	log.Info("Serivce a: initing tracing")
+
 	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint("http://localhost:14268/api/traces")))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Service a: cannot init Jaerger exporter: %s", err)
 	}
+
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithBatcher(exp),
@@ -33,6 +36,8 @@ func InitTracer() {
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	tracer = tp
+
+	log.Info("Serivce a: tracer inited")
 }
 
 func GetTracer() *sdktrace.TracerProvider {
